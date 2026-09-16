@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MBTI로 포켓몬 찾기</title>
+<style>
+  :root {
+    --cream: #fff8e7;
+    --cream-deep: #fdecc8;
+    --yellow: #ffcc4d;
+    --yellow-deep: #ffb703;
+    --brown: #7a5230;
+    --text: #4a3520;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', sans-serif;
+    background: linear-gradient(160deg, var(--cream) 0%, var(--cream-deep) 100%);
+    color: var(--text);
+    display: flex;
+    justify-content: center;
+    padding: 24px 12px 60px;
+  }
+
+  .wrap {
+    width: 100%;
+    max-width: 720px;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+
+  header h1 {
+    font-size: clamp(28px, 6vw, 40px);
+    margin: 0 0 8px;
+    color: var(--brown);
+  }
+
+  header p {
+    font-size: 18px;
+    margin: 0;
+    color: #8a6a44;
+  }
+
+  .card-box {
+    background: #fffdf6;
+    border-radius: 28px;
+    padding: 28px 22px;
+    box-shadow: 0 10px 30px rgba(180, 140, 60, 0.18);
+    border: 3px solid var(--yellow);
+  }
+
+  .mbti-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+
+  @media (max-width: 480px) {
+    .mbti-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  .mbti-btn {
+    font-size: 20px;
+    font-weight: 800;
+    padding: 18px 6px;
+    border: none;
+    border-radius: 16px;
+    background: var(--yellow);
+    color: var(--brown);
+    cursor: pointer;
+    transition: transform 0.12s ease, background 0.12s ease;
+    letter-spacing: 1px;
+  }
+
+  .mbti-btn:hover {
+    background: var(--yellow-deep);
+    transform: translateY(-3px) scale(1.03);
+  }
+
+  .mbti-btn:active {
+    transform: translateY(0) scale(0.98);
+  }
+
+  /* 결과 화면 */
+  .result {
+    display: none;
+    text-align: center;
+    animation: fadeIn 0.35s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .result.show { display: block; }
+
+  .my-type {
+    display: inline-block;
+    background: var(--brown);
+    color: #fff8e7;
+    font-weight: 800;
+    font-size: 16px;
+    padding: 6px 16px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+    letter-spacing: 2px;
+  }
+
+  .main-mon {
+    background: var(--cream-deep);
+    border-radius: 22px;
+    padding: 26px 18px;
+    margin-bottom: 18px;
+  }
+
+  .emoji-big {
+    font-size: 84px;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+
+  .mon-name {
+    font-size: 30px;
+    font-weight: 900;
+    color: var(--brown);
+    margin: 4px 0 12px;
+  }
+
+  .mon-reason {
+    font-size: 18px;
+    line-height: 1.6;
+    color: var(--text);
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  .compat-box {
+    background: #fff;
+    border: 2px dashed var(--yellow-deep);
+    border-radius: 18px;
+    padding: 18px;
+    margin-bottom: 22px;
+  }
+
+  .compat-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #a3781f;
+    margin-bottom: 10px;
+  }
+
+  .compat-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+
+  .compat-emoji {
+    font-size: 46px;
+  }
+
+  .compat-text {
+    text-align: left;
+    max-width: 320px;
+  }
+
+  .compat-text .compat-name {
+    font-size: 19px;
+    font-weight: 800;
+    color: var(--brown);
+    margin-bottom: 4px;
+  }
+
+  .compat-text .compat-type {
+    font-size: 14px;
+    color: #a3781f;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .compat-text p {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--text);
+  }
+
+  .retry-btn {
+    font-size: 18px;
+    font-weight: 800;
+    padding: 14px 32px;
+    border: none;
+    border-radius: 999px;
+    background: var(--brown);
+    color: #fff8e7;
+    cursor: pointer;
+    transition: transform 0.12s ease, opacity 0.12s ease;
+  }
+
+  .retry-btn:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+  }
+
+  footer {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 13px;
+    color: #b9985f;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>🍯 MBTI로 포켓몬 찾기</h1>
+    <p>내 MBTI를 골라보면, 나와 꼭 닮은 포켓몬을 알려줄게요!</p>
+  </header>
+
+  <div class="card-box">
+    <!-- 선택 화면 -->
+    <div id="selectScreen">
+      <div class="mbti-grid" id="mbtiGrid"></div>
+    </div>
+
+    <!-- 결과 화면 -->
+    <div class="result" id="resultScreen">
+      <div class="my-type" id="myTypeLabel"></div>
+
+      <div class="main-mon">
+        <div class="emoji-big" id="mainEmoji"></div>
+        <div class="mon-name" id="mainName"></div>
+        <div class="mon-reason" id="mainReason"></div>
+      </div>
+
+      <div class="compat-box">
+        <div class="compat-title">💛 이런 유형과 찰떡궁합이에요</div>
+        <div class="compat-content">
+          <div class="compat-emoji" id="compatEmoji"></div>
+          <div class="compat-text">
+            <div class="compat-name" id="compatName"></div>
+            <div class="compat-type" id="compatType"></div>
+            <p id="compatReason"></p>
+          </div>
+        </div>
+      </div>
+
+      <button class="retry-btn" id="retryBtn">🔄 다시 고르기</button>
+    </div>
+  </div>
+
+  <footer>총 16가지 MBTI × 16가지 포켓몬 매칭</footer>
+</div>
+
+<script>
+  // MBTI별 포켓몬 데이터
+  const data = {
+    INTJ: { name: "뮤츠", emoji: "🔮", reason: "냉철하고 전략적인 사고를 가진 완벽주의자예요.\n혼자만의 세계에서 깊이 파고드는 것을 좋아하고,\n목표를 향해서는 누구보다 강하게 밀어붙여요.", compat: "ENFP" },
+    ENFP: { name: "이브이", emoji: "🦊", reason: "밝고 다재다능해서 어디로든 변신할 수 있어요.\n사람들과 만나는 걸 좋아하고 아이디어가 샘솟는\n무한한 가능성의 소유자랍니다.", compat: "INTJ" },
+
+    INTP: { name: "캐이시", emoji: "🌀", reason: "조용히 앉아 생각하는 걸 세상에서 가장 좋아해요.\n논리적이고 호기심이 많아서 궁금한 건\n끝까지 파고들어야 직성이 풀려요.", compat: "ENTJ" },
+    ENTJ: { name: "리자몽", emoji: "🐉", reason: "타고난 리더십으로 목표를 향해 거침없이\n돌진하는 강력한 카리스마의 소유자예요.\n자신감 넘치고 추진력이 남달라요.", compat: "INTP" },
+
+    ENTP: { name: "뮤", emoji: "🌈", reason: "장난기와 호기심이 가득한 아이디어 뱅크예요.\n새로운 것에 도전하는 걸 즐기고,\n틀을 깨는 발상으로 주변을 놀라게 해요.", compat: "INFJ" },
+    INFJ: { name: "라프라스", emoji: "🌊", reason: "조용하지만 마음속엔 깊은 통찰이 가득해요.\n다른 사람을 지켜주고 배려하는\n따뜻한 보호자 같은 존재예요.", compat: "ENTP" },
+
+    INFP: { name: "푸린", emoji: "🎤", reason: "감수성이 풍부하고 자신만의 이야기를\n소중히 간직하는 몽상가예요.\n순수한 마음으로 세상을 바라봐요.", compat: "ENFJ" },
+    ENFJ: { name: "루카리오", emoji: "🐾", reason: "타인의 감정을 섬세하게 읽어내고\n따뜻하게 이끌어주는 천생 리더예요.\n주변 사람을 성장시키는 힘이 있어요.", compat: "INFP" },
+
+    ISTJ: { name: "메타그로스", emoji: "🤖", reason: "규칙과 원칙을 중요하게 여기는 성실한 노력파예요.\n한번 맡은 일은 끝까지 책임지고\n차근차근 완벽하게 해내요.", compat: "ESFP" },
+    ESFP: { name: "피카츄", emoji: "⚡", reason: "어디서든 분위기를 살리는 인기쟁이예요.\n밝은 에너지로 주변 사람을 즐겁게 하고\n지금 이 순간을 마음껏 즐겨요.", compat: "ISTJ" },
+
+    ISFJ: { name: "이상해씨", emoji: "🌱", reason: "묵묵히 주변을 챙기는 다정한 보호자예요.\n나서지는 않지만 늘 곁에서\n든든하게 힘이 되어줘요.", compat: "ESTP" },
+    ESTP: { name: "윈디", emoji: "🔥", reason: "용맹하고 행동파인 모험가 기질이에요.\n생각보다 몸이 먼저 움직이고,\n스릴 넘치는 도전을 두려워하지 않아요.", compat: "ISFJ" },
+
+    ISTP: { name: "갸라도스", emoji: "🐊", reason: "평소엔 조용하지만 속엔 강한 힘을 감추고 있어요.\n손으로 뭔가 만들고 고치는 걸 좋아하고,\n필요할 땐 폭발적인 실력을 보여줘요.", compat: "ESFJ" },
+    ESFJ: { name: "삐삐", emoji: "🌙", reason: "사람들을 살뜰히 챙기는 분위기 메이커예요.\n주변과의 조화를 무엇보다 중요하게 여기고\n다정함으로 모두를 감싸안아요.", compat: "ISTP" },
+
+    ISFP: { name: "글레이시아", emoji: "❄️", reason: "조용하지만 감성이 풍부한 예술가 기질이에요.\n아름다운 것을 사랑하고\n자기만의 속도로 세상을 느껴요.", compat: "ESTJ" },
+    ESTJ: { name: "괴력몬", emoji: "💪", reason: "강한 추진력과 책임감으로 조직을 이끄는\n타고난 실행가예요.\n맡은 일은 확실하게 해내야 직성이 풀려요.", compat: "ISFP" }
+  };
+
+  const grid = document.getElementById("mbtiGrid");
+  const selectScreen = document.getElementById("selectScreen");
+  const resultScreen = document.getElementById("resultScreen");
+
+  Object.keys(data).forEach(type => {
+    const btn = document.createElement("button");
+    btn.className = "mbti-btn";
+    btn.textContent = type;
+    btn.addEventListener("click", () => showResult(type));
+    grid.appendChild(btn);
+  });
+
+  function showResult(type) {
+    const mon = data[type];
+    const compatMon = data[mon.compat];
+
+    document.getElementById("myTypeLabel").textContent = type + " 유형";
+    document.getElementById("mainEmoji").textContent = mon.emoji;
+    document.getElementById("mainName").textContent = mon.name;
+    document.getElementById("mainReason").innerText = mon.reason;
+
+    document.getElementById("compatEmoji").textContent = compatMon.emoji;
+    document.getElementById("compatName").textContent = compatMon.name;
+    document.getElementById("compatType").textContent = mon.compat + " 유형";
+    document.getElementById("compatReason").innerText = compatMon.reason.split("\n")[0];
+
+    selectScreen.style.display = "none";
+    resultScreen.classList.add("show");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  document.getElementById("retryBtn").addEventListener("click", () => {
+    resultScreen.classList.remove("show");
+    selectScreen.style.display = "block";
+  });
+</script>
+</body>
+</html>
